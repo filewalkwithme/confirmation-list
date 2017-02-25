@@ -22,5 +22,9 @@ func RandStringRunes(n int) string {
 }
 
 func main() {
-	createDatabase()
+	db, err := initializeDB()
+	if err != nil {
+		panic("")
+	}
+	defer db.Close()
 }

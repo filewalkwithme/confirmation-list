@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -11,22 +10,33 @@ import (
 //DATABASEFILEPATH contains the path for the real sqlite3 db file
 const DATABASEFILEPATH = "./confirmation-list.db"
 
-func createDatabase() {
+func initializeDB() (*sql.DB, error) {
 	if _, err := os.Stat(DATABASEFILEPATH); os.IsNotExist(err) {
-		os.Remove(DATABASEFILEPATH)
-		db, err := sql.Open("sqlite3", DATABASEFILEPATH)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer db.Close()
+		return createDB()
+	}
 
-		sqlStmt := `
+	db, err := sql.Open("sqlite3", DATABASEFILEPATH)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func createDB() (*sql.DB, error) {
+	os.Remove(DATABASEFILEPATH)
+	db, err := sql.Open("sqlite3", DATABASEFILEPATH)
+	if err != nil {
+		return nil, err
+	}
+
+	sqlStmt := `
 create table guests (id integer not null primary key, name text, email text, confirmation_code text);
 `
-		_, err = db.Exec(sqlStmt)
-		if err != nil {
-			log.Printf("%q: %s\n", err, sqlStmt)
-			return
-		}
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		db.Close()
+		return nil, err
 	}
+
+	return db, nil
 }
