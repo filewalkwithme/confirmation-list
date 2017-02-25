@@ -40,3 +40,11 @@ create table guests (id integer not null primary key, name text, email text, con
 
 	return db, nil
 }
+
+func insertGuest(db *sql.DB, guest guest) error {
+	_, err := db.Exec("INSERT INTO guests (name, email, confirmation_code) VALUES (?, ?, ?)", guest.name, guest.email, guest.confirmationCode)
+	if err != nil {
+		return err
+	}
+	return nil
+}
