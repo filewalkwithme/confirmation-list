@@ -4,7 +4,14 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strings"
 )
+
+type guest struct {
+	name             string
+	email            string
+	confirmationCode string
+}
 
 func main() {
 	/*
@@ -20,9 +27,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var guests []guest
+
 	guestsScanner := bufio.NewScanner(guestsFile)
 	for guestsScanner.Scan() {
-		log.Println(guestsScanner.Text()) // Println will add back the final '\n'
+		line := guestsScanner.Text()
+		fields := strings.Split(line, ";")
+		if len(fields) != 2 {
+			log.Fatalf("Error reading line: %v", line)
+		}
+		guests = append(guests, guest{name: fields[0], email: fields[1]})
+	}
+
+	for _, guest := range guests {
+		log.Printf("Name: %v, Email: %v", guest.name, guest.email)
 	}
 	if err := guestsScanner.Err(); err != nil {
 		log.Fatalf("reading standard input: %v", err)
