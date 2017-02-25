@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -25,9 +25,15 @@ func confirmationServer(w http.ResponseWriter, req *http.Request) {
 			}
 			name := nameField[0]
 			confirmationCode := confirmationCodeField[0]
-			companions := companionsField[0]
 
-			fmt.Fprintf(w, "%v: %v: %v\n", name, confirmationCode, companions)
+			companions, err := strconv.Atoi(companionsField[0])
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			guest := guest{name: name, confirmationCode: confirmationCode, companions: companions}
+			confirmGuest(db, guest)
 			return
 		}
 	}

@@ -8,6 +8,7 @@ type guest struct {
 	name             string
 	email            string
 	confirmationCode string
+	companions       int
 }
 
 func main() {
@@ -15,11 +16,12 @@ func main() {
 	flag.StringVar(&mode, "mode", "", "load-from-csv, webserver")
 	flag.Parse()
 
-	db, err := initializeDB()
+	dbLocal, err := initializeDB()
 	if err != nil {
 		panic("")
 	}
-	defer db.Close()
+	defer dbLocal.Close()
+	db = dbLocal
 
 	if mode == "load-from-csv" {
 		loadGuestsFromCSV(db)

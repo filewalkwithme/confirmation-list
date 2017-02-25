@@ -6,12 +6,15 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 //DATABASEFILEPATH contains the path for the real sqlite3 db file
 const DATABASEFILEPATH = "./confirmation-list.db"
+
+var db *sql.DB
 
 func initializeDB() (*sql.DB, error) {
 	if _, err := os.Stat(DATABASEFILEPATH); os.IsNotExist(err) {
@@ -46,6 +49,14 @@ create table guests (id integer not null primary key, name text, email text, con
 
 func insertGuest(db *sql.DB, guest guest) error {
 	_, err := db.Exec("INSERT INTO guests (name, email, confirmation_code) VALUES (?, ?, ?)", guest.name, guest.email, guest.confirmationCode)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func confirmGuest(db *sql.DB, guest guest) error {
+	_, err := db.Exec("UPDATE guests set confirmed=1, confirmation_date=?, companions=? where name=? and confirmation_code=?", time.Now(), guest.companions, guest.name, guest.confirmationCode)
 	if err != nil {
 		return err
 	}
