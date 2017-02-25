@@ -9,7 +9,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var letterRunes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+var letterRunes = []rune("BCDFGHJKLMNPQRSTVWXYZ")
 
 func generateConfirmationCode() string {
 	b := make([]rune, 6)
