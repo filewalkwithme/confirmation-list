@@ -11,8 +11,8 @@ type guest struct {
 }
 
 func main() {
-	var populateDB bool
-	flag.BoolVar(&populateDB, "populate-db", false, "")
+	var mode string
+	flag.StringVar(&mode, "mode", "", "load-from-csv, webserver")
 	flag.Parse()
 
 	db, err := initializeDB()
@@ -21,7 +21,12 @@ func main() {
 	}
 	defer db.Close()
 
-	if populateDB {
+	if mode == "load-from-csv" {
 		loadGuestsFromCSV(db)
+		return
+	}
+
+	if mode == "webserver" {
+		initializeWebServer()
 	}
 }
