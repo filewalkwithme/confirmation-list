@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
+	"log"
 	"os"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -30,7 +33,7 @@ func createDB() (*sql.DB, error) {
 	}
 
 	sqlStmt := `
-create table guests (id integer not null primary key, name text, email text, confirmation_code text);
+create table guests (id integer not null primary key, name text, email text, confirmation_code text, confirmation_date datetime, confirmed integer, companions integer);
 `
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
@@ -47,4 +50,35 @@ func insertGuest(db *sql.DB, guest guest) error {
 		return err
 	}
 	return nil
+}
+
+func loadGuestsFromCSV(db *sql.DB) {
+	guestsFile, err := os.Open("guests.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var guests []guest
+
+	guestsScanner := bufio.NewScanner(guestsFile)
+	for guestsScanner.Scan() {
+		line := guestsScanner.Text()
+		fields := strings.Split(line, ";")
+		if len(fields) != 2 {
+			log.Fatalf("Error reading line: %v", line)
+		}
+		guests = append(guests, guest{name: fields[0], email: fields[1], confirmationCode: generateConfirmationCode()})
+	}
+
+	for _, guest := range guests {
+		log.Printf("Name: %v, Email: %v", guest.name, guest.email)
+		err = insertGuest(db, guest)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if err := guestsScanner.Err(); err != nil {
+		log.Fatalf("reading standard input: %v", err)
+	}
 }
