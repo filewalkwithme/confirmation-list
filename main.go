@@ -1,9 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
+	"log"
 	"math/rand"
+	"os"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func init() {
@@ -21,5 +25,20 @@ func RandStringRunes(n int) string {
 }
 
 func main() {
-	fmt.Printf("%v\n", RandStringRunes(6))
+	os.Remove("./confirmation-list.db")
+
+	db, err := sql.Open("sqlite3", "./confirmation-list.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	sqlStmt := `
+create table guests (id integer not null primary key, name text, email text, confirmation_code text);
+`
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+		return
+	}
 }
