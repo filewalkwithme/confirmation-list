@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -56,7 +57,17 @@ func insertGuest(db *sql.DB, guest guest) error {
 }
 
 func confirmGuest(db *sql.DB, guest guest) error {
-	_, err := db.Exec("UPDATE guests set confirmed=1, confirmation_date=?, companions=? where name=? and confirmation_code=?", time.Now(), guest.companions, guest.name, guest.confirmationCode)
+	count := 0
+	err := db.QueryRow("select count(1) from guests where name=? and confirmation_code=? and confirmed=1", guest.name, guest.confirmationCode).Scan(&count)
+	log.Printf("name: %v", guest.name)
+	log.Printf("code: %v", guest.confirmationCode)
+	log.Printf("count: %v", count)
+
+	if count > 0 {
+		return fmt.Errorf("Confirmation code already used.")
+	}
+
+	_, err = db.Exec("UPDATE guests set confirmed=1, confirmation_date=?, companions=? where name=? and confirmation_code=?", time.Now(), guest.companions, guest.name, guest.confirmationCode)
 	if err != nil {
 		return err
 	}

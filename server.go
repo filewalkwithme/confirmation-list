@@ -33,7 +33,12 @@ func confirmationServer(w http.ResponseWriter, req *http.Request) {
 			}
 
 			guest := guest{name: name, confirmationCode: confirmationCode, companions: companions}
-			confirmGuest(db, guest)
+			err = confirmGuest(db, guest)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
 			return
 		}
 	}
